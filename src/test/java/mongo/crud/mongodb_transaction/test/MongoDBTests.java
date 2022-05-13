@@ -3,6 +3,7 @@ package mongo.crud.mongodb_transaction.test;
 import com.mongodb.*;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -130,9 +131,11 @@ public class MongoDBTests {
             documentMap2.put("name", "col1_abort2");
             documentMap2.put("age", 22);
 
-            collection.updateOne(Filters.eq("name", "col1_abort1"), new BasicDBObject("$set", documentMap1));
+            UpdateOptions options = new UpdateOptions().upsert(true);
+
+            collection.updateOne(Filters.eq("name", "col1_abort1"), new BasicDBObject("$set", documentMap1), options);
             Integer.parseInt("a");  // 에러발생
-            collection.updateOne(Filters.eq("name", "col1_abort2"), new BasicDBObject("$set", documentMap2));
+            collection.updateOne(Filters.eq("name", "col1_abort2"), new BasicDBObject("$set", documentMap2), options);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -145,7 +148,7 @@ public class MongoDBTests {
             System.out.println("JSON >> " + document.toJson());
 
             // then
-            Assertions.assertEquals(document.get("age"), 33);
+            Assertions.assertEquals(document.get("age"), 44);
         }
     }
 
@@ -177,6 +180,7 @@ public class MongoDBTests {
                 documentMap2.put("age", 2);
 
                 collection1.insertOne(clientSession, new Document(documentMap1));
+                Integer.parseInt("a");  // 에러발생
                 collection2.insertOne(clientSession, new Document(documentMap2));
                 return "Success";
             }
@@ -186,11 +190,11 @@ public class MongoDBTests {
             // step 4 : Use .withTransaction() to start a transaction, execute the callback, and commit (or abort on error)
             clientSession.withTransaction(body, options);
             System.out.println("transaction : " + clientSession.hasActiveTransaction());
-            clientSession.commitTransaction();
+            // clientSession.commitTransaction();
 
         } catch (Exception e) {
             e.printStackTrace();
-            clientSession.abortTransaction();
+            // clientSession.abortTransaction();
 
         } finally {
             clientSession.close();
