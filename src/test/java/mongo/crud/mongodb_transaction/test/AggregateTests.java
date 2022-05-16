@@ -42,9 +42,9 @@ public class AggregateTests {
     @Test
     public void testMatch() {
         // $match - 조건에 만족하는 Document만 Filtering
-        // db.articles.aggregate( [ { $match : { name : "park" } } ] );
+        // db.aggregation.aggregate( [ { $match : { name : "park" } } ] );
 
-        //given
+        // given
         // Test data
 
         // when
@@ -54,5 +54,34 @@ public class AggregateTests {
 
         // then
         documents.forEach(s -> Assertions.assertEquals(s.get("name"), "park"));
+    }
+
+    @Test
+    public void testGroup() {
+        // $group - Document에 대한 Grouping 연산, Group에 대한 id를 지정해야함, 정렬 지원 X
+        // db.aggregation.aggregate( [ { $group : { _id : "$subject", avg : { $avg : "$score" }, count : { $sum : 1 } } } ] );
+
+        // given
+        // Test data
+
+        // when
+        AggregateIterable<Document> documents = collection.aggregate(
+                Arrays.asList(
+                        new Document("$group"
+                                , new Document("_id", "$subject")
+                                        .append("avg", new Document("$avg", "$score"))
+                                        .append("count", new Document("$sum", 1)))));
+
+        documents.forEach(s -> System.out.println("JSON >>> " + s));
+
+        // then
+        Document document = documents.first(); // 순서 X
+        if (document.get("_id").equals("science")) {
+            Assertions.assertEquals(document.get("avg"), 55.0);
+            Assertions.assertEquals(document.get("count"), 3);
+        } else {
+            Assertions.assertEquals(document.get("avg"), 72.25);
+            Assertions.assertEquals(document.get("count"), 4);
+        }
     }
 }
