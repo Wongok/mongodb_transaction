@@ -84,4 +84,43 @@ public class AggregateTests {
             Assertions.assertEquals(document.get("count"), 4);
         }
     }
+
+    @Test
+    public void testProject() {
+        // $project - Project에서 지정한 필드 값을 다음 파이프라인 단계로 전달, 0: 필드 미표시 1: 필드 표시
+        // db.aggregation.aggregate( [ { $project : { score : 1, subject : 1 } } ] );
+
+        // given
+        // Test data
+
+        // when
+        AggregateIterable<Document> documents = collection.aggregate(
+                Arrays.asList(
+                        new Document("$project"
+                                , new Document("score", 1)
+                                .append("subject", 1))));
+
+        documents.forEach(s -> System.out.println("JSON >>> " + s));
+
+        documents.forEach(s -> Assertions.assertFalse(s.containsKey("name")));
+    }
+
+    @Test
+    public void testSort() {
+        // $sort - 정렬 조건에 맞게 파이프라인의 연산결과를 정렬, 1: ASC -1: DESC
+        // db.aggregation.aggregate( { $sort : { score : -1 } } );
+
+        // given
+        // Test data
+
+        // when
+        AggregateIterable<Document> documents = collection.aggregate(
+                Arrays.asList(
+                        new Document("$sort", new Document("score", -1))));
+
+        documents.forEach(s -> System.out.println("JSON >>> " + s));
+
+        // then
+        Assertions.assertEquals(documents.first().get("score"), 100.0);
+    }
 }
