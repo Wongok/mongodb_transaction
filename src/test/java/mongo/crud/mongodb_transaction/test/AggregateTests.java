@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @TestConfiguration
 @SpringBootTest
@@ -122,5 +123,40 @@ public class AggregateTests {
 
         // then
         Assertions.assertEquals(documents.first().get("score"), 100.0);
+    }
+
+    @Test
+    public void testSkip() {
+        // $skip - 입력한 갯수만큼 차례대로 Document를 skip 한 데이터를 다음 파이프라인에 전달
+        // db.aggregation.aggregate( [ { $skip : 4 } ] );
+
+        // given
+        // Test data
+
+        // when
+        AggregateIterable<Document> documents = collection.aggregate(Arrays.asList(new Document("$skip", 4)));
+
+        documents.forEach(s -> System.out.println("JSON >>> " + s));
+
+        // then
+        Assertions.assertEquals(documents.first().get("_id"), "agg5");
+    }
+
+    @Test
+    public void testSample() {
+        // $sample - Collection 내에서 입력한 갯수만큼 랜덤하게 Document 출력
+        // db.aggregation.aggregate( [ { $sample : { size : 4 } } ] );
+
+        // given
+        // Test data
+
+        // when
+        AggregateIterable<Document> documents = collection.aggregate(Arrays.asList(new Document("$sample", new Document("size", 4))));
+
+        AtomicInteger cnt = new AtomicInteger();
+        documents.forEach(s -> System.out.println("JSON " + cnt.incrementAndGet() + " >>>" + s));
+
+        // then
+        Assertions.assertEquals(cnt.get(), 4);
     }
 }
