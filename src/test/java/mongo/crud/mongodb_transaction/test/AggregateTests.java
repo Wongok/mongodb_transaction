@@ -159,4 +159,42 @@ public class AggregateTests {
         // then
         Assertions.assertEquals(cnt.get(), 4);
     }
+
+    @Test
+    public void testCount() {
+        // $count - Document의 카운트를 다음 단계로 전달
+        // db.aggregation.aggregate( [ { $match : { score : { $gt : 70 } } }, { $count : "70_over_cnt" } ] );
+
+        // given
+        // Test data
+
+        // when
+        AggregateIterable<Document> documents = collection.aggregate(
+                Arrays.asList(
+                        new Document("$match"
+                                , new Document("score", new Document("$gt", 70)))
+                        , new Document("$count", "70_over_cnt")));
+
+        System.out.println("JSON >>> " + documents.first());
+
+        // then
+        Assertions.assertEquals(documents.first().get("70_over_cnt"), 3);
+    }
+
+    @Test
+    public void testAddFields() {
+        // $addFields - Document에 새 필드 추가, 실제 Document 문서 내용 변경 X, 조회 목적
+        // db.aggregation.aggregate( [ { $addFields : { "grade" : 1 } } ] );
+
+        // given
+        // Test data
+
+        // when
+        AggregateIterable<Document> documents = collection.aggregate(Arrays.asList(new Document("$addFields", new Document("grade", 1))));
+
+        documents.forEach(s -> System.out.println("JSON >>> " + s));
+
+        // then
+        Assertions.assertEquals(documents.first().get("grade"), 1);
+    }
 }
