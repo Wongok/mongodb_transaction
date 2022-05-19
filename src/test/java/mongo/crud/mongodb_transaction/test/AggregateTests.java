@@ -197,4 +197,25 @@ public class AggregateTests {
         // then
         Assertions.assertEquals(documents.first().get("grade"), 1);
     }
+
+    @Test
+    public void testUnwind() {
+        // $unwind - Document내의 배열 필드를 기반으로 각각의 Document로 분리
+        // db.aggregation2.aggregate( [ { $match : { name : "separk" } }, { $unwind : "$subjects" } ] );
+
+        // given
+        // { "_id" : agg8, "name" : "separk", "subject" : [ "math", "science", "korean" ] };
+
+        // when
+        AggregateIterable<Document> documents = collection.aggregate(
+                Arrays.asList(
+                        new Document("$match"
+                                , new Document("name", "separk"))
+                        , new Document("$unwind", "$subjects")));
+
+        documents.forEach(s -> System.out.println("JSON >>> " + s));
+
+        // then
+        Assertions.assertEquals(documents.first().get("subjects"), "math");
+    }
 }
